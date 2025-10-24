@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-commerce Recommendation System</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .navbar {
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .container {
+            margin-top: 50px;
+        }
+        /* Style for the video header */
+        .video-header-container {
+            width: 100%;
+            height: 400px; /* Consistent height for the header */
+            overflow: hidden;
+            position: relative;
+        }
+        .video-background {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Ensure the video covers the entire container */
+        }
+        .nav-link:hover {
+            color: orange !important;
+        }
+        .nav-link.btn {
+            border-radius: 5px;
+        }
+        .modal-content {
+            background-color: #fff;
+            color: #000;
+        }
+        /* Style for the success message after sign up/in */
+        .alert-success-custom {
+            margin: 20px auto;
+            width: fit-content;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-weight: bold;
+            color: #155724;
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            text-align: center;
+        }
+        .card-img-top {
+            height: 200px; /* Set a fixed height for consistency */
+            object-fit: cover; /* Ensures images fill the card space cleanly */
+        }
+        .card {
+            height: 100%; /* Ensures all cards are the same height */
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <a class="navbar-brand mx-auto" href="/">E-commerce Recommendation System</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+    <ul class="navbar-nav">
+      <li class="nav-item active">
+        <a class="nav-link" href="/"><i class="fas fa-home"></i> Home</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#" id="settingsLink"><i class="fas fa-cog"></i> Settings</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link btn btn-outline-primary mr-2" href="#" data-toggle="modal" data-target="#signupModal">Sign Up</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link btn btn-primary" href="#" data-toggle="modal" data-target="#signinModal">Sign In</a>
+      </li>
+    </ul>
+  </div>
+</nav>
+
+
+<div class="video-header-container">
+    <video class="video-background" autoplay loop muted>
+      <source src="{{ url_for('static', filename='v.mp4') }}" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
+</div>
+
+<div class="text-center mt-5">
+  <a href="/main" class="btn btn-primary btn-lg">Go To Main Page</a>
+</div>
+
+{% if signup_message %}
+<div class="alert-success-custom">{{ signup_message }}</div>
+{% endif %}
+
+<div class="container mt-5">
+  <h2 class="text-center mb-4">Trending Products</h2>
+  <div class="row mt-4">
+    {% for index, product in trending_products.iterrows() %}
+    <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+      <div class="card h-100">
+          <img src="{{ url_for('static', filename=random_product_image_urls[loop.index0].replace('static/', '')) }}" 
+               class="card-img-top" 
+               alt="{{ product['Name'] }}" 
+               style="height: 200px;">
+        <div class="card-body">
+          <h5 class="card-title" title="{{ product['Name'] }}">{{ truncate(product['Name'], 18) }}</h5>
+          <p class="card-text">Brand: {{ product['Brand'] }}</p>
+          <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#productModal{{ index }}">Details</button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="modal fade" id="productModal{{ index }}" tabindex="-1" role="dialog" aria-labelledby="productModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="productModalLabel">{{ product['Name'] }}</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="row">
+              <div class="col-md-5">
+                  <img src="{{ url_for('static', filename=random_product_image_urls[loop.index0].replace('static/', '')) }}" 
+                       class="img-fluid" 
+                       alt="{{ product['Name'] }}" 
+                       style="height: 250px; width: 100%; object-fit: cover;">
+              </div>
+              <div class="col-md-7">
+                <p><strong>Brand:</strong> {{ product['Brand'] }}</p>
+                <p><strong>Review Count:</strong> {{ product['ReviewCount'] }}</p>
+                <p><strong>Rating:</strong> 
+                    {% for i in range(product['Rating'] | int) %}
+                        <i class="fas fa-star text-warning"></i>
+                    {% endfor %}
+                    ({{ product['Rating'] }})
+                </p>
+                <p><strong>Price:</strong> ${{ random_price }}</p>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-success">Add to Cart</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+
+<div class="modal fade" id="signupModal" tabindex="-1" role="dialog" aria-labelledby="signupModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="signupModalLabel">Sign Up</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form action="/signup" method="post">
+          <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" class="form-control" id="username" name="username" required>
+          </div>
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" class="form-control" id="email" name="email" required>
+          </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" class="form-control" id="password" name="password" required>
+          </div>
+          <button type="submit" class="btn btn-primary">Sign Up</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="signinModal" tabindex="-1" role="dialog" aria-labelledby="signinModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="signinModalLabel">Sign In</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form action="/signin" method="post">
+          <div class="form-group">
+            <label for="signinUsername">Username</label>
+            <input type="text" class="form-control" id="signinUsername" name="signinUsername" required>
+          </div>
+          <div class="form-group">
+            <label for="signinPassword">Password</label>
+            <input type="password" class="form-control" id="signinPassword" name="signinPassword" required>
+          </div>
+          <button type="submit" class="btn btn-primary">Sign In</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal fade" id="settingsModal" tabindex="-1" role="dialog" aria-labelledby="settingsModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="settingsModalLabel">Settings</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <h5>Choose Theme:</h5>
+        <div class="form-check">
+          <input class="form-check-input" type="radio" name="theme" id="defaultTheme" value="default" checked>
+          <label class="form-check-label" for="defaultTheme">
+            Default
+          </label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="radio" name="theme" id="blackTheme" value="black">
+          <label class="form-check-label" for="blackTheme">
+            Dark Theme
+          </label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="radio" name="theme" id="greenTheme" value="green">
+          <label class="form-check-label" for="greenTheme">
+            Green Theme
+          </label>
+        </div>
+        <hr>
+        <h5>Zoom:</h5>
+        <button type="button" class="btn btn-primary mr-2" id="zoomIn">Zoom In</button>
+        <button type="button" class="btn btn-primary" id="zoomOut">Zoom Out</button>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id="applyTheme">Apply</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer class="footer bg-dark text-white mt-5">
+    <div class="container" style="padding-top:20px;">
+        <div class="row">
+            <div class="col-md-3 col-sm-6">
+                <h5>About Us</h5>
+                <p>A content-based recommendation system showcasing products based on tags and descriptions for a personalized shopping experience.</p>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <h5>Quick Links</h5>
+                <ul class="list-unstyled">
+                    <li><a href="/" class="text-white">Home</a></li>
+                    <li><a href="/main" class="text-white">Main Page</a></li>
+                    <li><a href="#" class="text-white" data-toggle="modal" data-target="#signupModal">Sign Up</a></li>
+                    <li><a href="#" class="text-white" data-toggle="modal" data-target="#signinModal">Sign In</a></li>
+                </ul>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <h5>Support</h5>
+                <ul class="list-unstyled">
+                    <li><a href="#" class="text-white">FAQ</a></li>
+                    <li><a href="#" class="text-white">Terms of Service</a></li>
+                    <li><a href="#" class="text-white">Privacy Policy</a></li>
+                </ul>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <h5>Contact Us</h5>
+                <address>
+                    <strong>E-commerce System</strong><br>
+                    123 Project Lane, City<br>
+                    India<br>
+                    <i class="fas fa-phone"></i> Phone: +1234567890<br>
+                    <i class="fas fa-envelope"></i> Email: info@project.com
+                </address>
+            </div>
+        </div>
+        <div class="row mt-3">
+            <div class="col-md-12">
+                <hr class="bg-light">
+                <p class="text-center">© 2024 Ecommerce Recommendation System. All Rights Reserved.</p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<script>
+    // Handle click on Settings link to open the modal
+    document.getElementById('settingsLink').addEventListener('click', function(e) {
+        e.preventDefault(); 
+        $('#settingsModal').modal('show');
+    });
+
+    // Handle theme apply button click
+    document.getElementById('applyTheme').addEventListener('click', function() {
+        var selectedTheme = document.querySelector('input[name="theme"]:checked').value;
+
+        // Reset all theme classes/styles
+        document.body.className = '';
+        document.body.style.backgroundColor = '';
+        document.body.style.color = '';
+        $('.navbar').removeClass('navbar-dark bg-dark navbar-success').addClass('navbar-light bg-light');
+        $('.footer').removeClass('bg-light text-dark').addClass('bg-dark text-white');
+        $('.modal-content').removeClass('dark-theme');
+        $('a.nav-link, a.text-white').css('color', ''); 
+
+        // Apply the selected theme
+        if (selectedTheme === 'black') {
+            document.body.style.backgroundColor = '#212529'; 
+            document.body.style.color = '#f8f9fa'; 
+            $('.navbar').removeClass('navbar-light bg-light').addClass('navbar-dark bg-dark');
+            $('.modal-content').css({ 'background-color': '#343a40', 'color': '#f8f9fa' });
+            // This ensures footer links remain visible in a dark theme
+            $('.footer a').css('color', '#f8f9fa'); 
+        } else if (selectedTheme === 'green') {
+            document.body.style.backgroundColor = '#1e7e34'; 
+            document.body.style.color = 'white';
+            $('.navbar').removeClass('navbar-light bg-light').addClass('navbar-dark').css('background-color', '#28a745');
+            $('.modal-content').css({ 'background-color': '#f8f9fa', 'color': '#000' });
+        } else {
+             // Default theme styles (already set by reset)
+        }
+
+        $('#settingsModal').modal('hide');
+    });
+
+    // Handle zoom using font size
+    document.getElementById('zoomIn').addEventListener('click', function() {
+        var currentFontSize = parseFloat(window.getComputedStyle(document.body).fontSize);
+        document.body.style.fontSize = (currentFontSize * 1.1) + 'px';
+    });
+
+    document.getElementById('zoomOut').addEventListener('click', function() {
+        var currentFontSize = parseFloat(window.getComputedStyle(document.body).fontSize);
+        document.body.style.fontSize = (currentFontSize / 1.1) + 'px';
+    });
+</script>
+
+
+</body>
+</html>
